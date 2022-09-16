@@ -1043,7 +1043,7 @@ int main(int argc, char** argv) {
     glutInitWindowPosition(0, 0);
 
     //Define window size
-    glutInitWindowSize(500, 500);
+    glutInitWindowSize(800, 800);
 
     //Create window with name
     glutCreateWindow("Space Shooter");
