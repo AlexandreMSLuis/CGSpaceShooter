@@ -4,14 +4,6 @@ Ship::Ship(GLfloat* pos) {
     currentPosition[0] = pos[0];
     currentPosition[1] = pos[1];
 
-    //Set speed as 1.5% of the screen width
-    speed[0] = (worldCoordinates[1] - worldCoordinates[0]) * 0.015;
-    speed[1] = (worldCoordinates[3] - worldCoordinates[2]) * 0.015;
-
-    //set ship dimentions
-    size[0] = 6.0f;
-    size[1] = 6.0f;
-
     //texture variables
     shipRenderID = 0;
     shipTextureFilePath = "Textures/player.png";
@@ -19,13 +11,27 @@ Ship::Ship(GLfloat* pos) {
     width = 0;
     height = 0;
     bpp = 0;
+
+    stbi_set_flip_vertically_on_load(1);
+
+    shipBuffer = stbi_load(shipTextureFilePath.c_str(), &width, &height, &bpp, 4);
+
+        //Set speed as 1.5% of the screen width
+    speed[0] = (worldCoordinates[1] - worldCoordinates[0]) * 0.015;
+    speed[1] = (worldCoordinates[3] - worldCoordinates[2]) * 0.015;
+
+    //set ship dimentions
+    size[0] = (float)width * 0.08f;
+    size[1] = (float)height * 0.08f;;
+    //size[1] = 6.0f;
+
+    //cout << "width: " << width << "height: " << height << endl;
+    //cout << "size[0]: " << size[0] << "size[1]: " << size[1] << endl;
 }
 
 GLvoid  Ship::body(GLvoid) {
 
-   stbi_set_flip_vertically_on_load(1);
 
-    shipBuffer = stbi_load(shipTextureFilePath.c_str(), &width, &height, &bpp, 4);
 
     glGenTextures(1, &shipRenderID);
     glBindTexture(GL_TEXTURE_2D, shipRenderID);

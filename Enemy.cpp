@@ -3,8 +3,6 @@
 Enemy::Enemy(GLfloat x, GLfloat y, GLint eType) {
     currentPosition[0] = x;
     currentPosition[1] = y;
-    size[0] = 3.0f;
-    size[1] = 2.0f;
 
     speed[0] = 0.3f;
     speed[1] = 3.0f;
@@ -54,6 +52,17 @@ Enemy::Enemy(GLfloat x, GLfloat y, GLint eType) {
 
     enemyBuffer = stbi_load(enemyTextureFilePath.c_str(), &width, &height, &bpp, 4);
 
+    size[0] = (float)width * 0.03f;;
+    size[1] = (float)height * 0.03f;;
+
+    /*
+    size[0] = 3.0f;
+    size[1] = 2.0f;
+    */
+
+    cout << "width: " << width << "height: " << height << endl;
+    cout << "size[0]: " << size[0] << "size[1]: " << size[1] << endl;
+
     glGenTextures(1, &enemyRenderID);
     glBindTexture(GL_TEXTURE_2D, enemyRenderID);
 
@@ -73,9 +82,9 @@ GLvoid Enemy::enemyBody(GLvoid) {
 
     glBegin(GL_QUADS); {
         glTexCoord2f(0.0, 0.0); glVertex3f(0.0f, 0.0f, 0.0f);
-        glTexCoord2f(1.0, 0.0); glVertex3f(3.0f, 0.0f, 0.0f);
-        glTexCoord2f(1.0, 1.0); glVertex3f(3.0f, 3.0f, 0.0f);
-        glTexCoord2f(0.0, 1.0); glVertex3f(0.0f, 3.0f, 0.0f);
+        glTexCoord2f(1.0, 0.0); glVertex3f(size[0], 0.0f, 0.0f);
+        glTexCoord2f(1.0, 1.0); glVertex3f(size[0], size[1], 0.0f);
+        glTexCoord2f(0.0, 1.0); glVertex3f(0.0f, size[1], 0.0f);
     } glEnd();
 
     glDisable(GL_TEXTURE_2D);
