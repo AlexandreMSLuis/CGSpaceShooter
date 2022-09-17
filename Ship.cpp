@@ -22,11 +22,8 @@ Ship::Ship(GLfloat* pos) {
 
     //set ship dimentions
     size[0] = (float)width * 0.08f;
-    size[1] = (float)height * 0.08f;;
-    //size[1] = 6.0f;
+    size[1] = (float)height * 0.08f;
 
-    //cout << "width: " << width << "height: " << height << endl;
-    //cout << "size[0]: " << size[0] << "size[1]: " << size[1] << endl;
 }
 
 GLvoid  Ship::body(GLvoid) {

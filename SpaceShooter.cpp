@@ -6,6 +6,7 @@
 #include "Particle.h"
 #include "Enemy.h"
 #include "Life.h"
+#include "Menu.h"
 
 /*+++++++++++++++++++++++++++++++++
 Space Invasion!!
@@ -27,6 +28,8 @@ GLfloat worldCoordinates[4] = { -40.0f, 40.0f, -40.0f, 40.0f };
 //buffer to write text on OpenGL scenes
 stringstream buffer;
 
+//create the menu variable to swap menus
+Menu* menu = new Menu();
 //create the element that player controls
 Ship* player;
 
@@ -87,8 +90,9 @@ vector <Particle*> particles;
 // Number of particles to create
 GLint numParticles = 20;
 
-/* DEBUG AXIS FOR CENTER OF WINDOW
+//DEBUG AXIS FOR CENTER OF WINDOW
 //Debug axis line
+
 GLvoid drawAxis() {
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES); {
@@ -100,7 +104,8 @@ GLvoid drawAxis() {
         glVertex2f(0.0, 0.0);
         glVertex2f(10.0, 0.0);
     }glEnd();
-}*/
+}
+
 
 
 /* 
@@ -190,7 +195,6 @@ GLvoid createStars(GLvoid) {
 GLvoid gameKeyboard(unsigned char key, int x, int y) {
     Bullet* bullet;
     GLfloat* playerSize;
-    //GLfloat testBp[] = {30.0f,-10.0f};
     GLfloat firePosition[2];
     switch (key) {
     case 'Q':
@@ -219,7 +223,7 @@ GLvoid gameKeyboard(unsigned char key, int x, int y) {
         break;
 
     case 32:
-        if (playerCanShoot) {
+        if (isPlayerAlive && playerCanShoot) {
             playerCanShoot = false;
             //we need to get the player current position
             playerBulletPosition = player->getPosition();
@@ -246,8 +250,10 @@ GLvoid menuKeyboard(unsigned char key, int x, int y) {
         exit(0);
         break;
 
-    case 'n':
-    case 'N':
+    case 'S':
+    case 's':
+    case 'R':
+    case 'r':
         gameStart();
         glutPostRedisplay();
         break;
@@ -696,130 +702,19 @@ GLvoid drawGame(GLvoid) {
 }
 
 // Menu Draw callback
-GLvoid drawMenu(GLvoid) {
-    string text1 = "Space Shooter!!!";
-    string text2 = "N - New Game";
-
-    //variables used to get the center of the screen
-    GLfloat centerX = (worldCoordinates[0] + worldCoordinates[1]) / 2;
-    GLfloat centerY = (worldCoordinates[2] + worldCoordinates[3]) / 2;
-
-    //variable used to calculate the width of the string
-    GLfloat stringWidth = 0;
-
-    //Define background color
-    glClearColor(0, 0, 0, 0);
-
-    //Clear color buffer
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    //Select projection matrix
-    glMatrixMode(GL_PROJECTION);
-
-    //Load identity matrix
-    glLoadIdentity();
-    //Projection Type
-    gluOrtho2D(worldCoordinates[0], worldCoordinates[1], worldCoordinates[2], worldCoordinates[3]);
-
-    //Select Model View Matrix
-    glMatrixMode(GL_MODELVIEW);
-
-    //Load identity matrix
-    glLoadIdentity();
-
-    //calculate the width of the string text1
-    stringWidth = text1.length();
-
-    //positioning text1 in the center of the screen and 5.0f uper of its center
-    glRasterPos3f(centerX - stringWidth / 2, centerY / 2 + 5.0f, 0.0);
-
-    //displaying the charaters of the string text1 with the respective font and font size
-    for (int i = 0; i < text1.length(); i++) {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, text1[i]);
-    }
-
-
-    //calculate the width of the string text2
-    stringWidth = text2.length();
-
-    //positioning text2 in the center of the screen
-    glRasterPos3f(centerX - stringWidth / 2, centerY / 2, 0.0);
-
-    //displaying the charaters of the string text2 with the respective font and font size
-    for (int i = 0; i < text2.length(); i++) {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text2[i]);
-    }
+GLvoid drawMainMenu() {
+    menu->draw(0);
+    glutSwapBuffers();
+}
+// Menu Lose Draw callback
+GLvoid drawLose() {
+    menu->draw(1);
     glutSwapBuffers();
 }
 
-// Menu Draw callback
-GLvoid drawFinish(GLvoid) {
-    string text1 = "Congratulations!!!";
-    string text2 = "N - New Game";
-    string text3 = "Q - Exit";
-
-    //variables used to get the center of the screen
-    GLfloat centerX = (worldCoordinates[0] + worldCoordinates[1]) / 2;
-    GLfloat centerY = (worldCoordinates[2] + worldCoordinates[3]) / 2;
-
-    //variable used to calculate the width of the string
-    GLfloat stringWidth = 0;
-
-
-    //Define background color
-    glClearColor(0, 0, 0, 0);
-
-    //Clear color buffer
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    //Select projection matrix
-    glMatrixMode(GL_PROJECTION);
-
-    //Load identity matrix
-    glLoadIdentity();
-    //Projection Type
-    gluOrtho2D(worldCoordinates[0], worldCoordinates[1], worldCoordinates[2], worldCoordinates[3]);
-
-    //Select Model View Matrix
-    glMatrixMode(GL_MODELVIEW);
-
-    //Load identity matrix
-    glLoadIdentity();
-
-    //calculate the width of the string text1
-    stringWidth = text1.length();
-
-    //positioning text1 in the center of the screen and 5.0f uper of its center
-    glRasterPos3f(centerX - stringWidth / 2, centerY / 2 + 5.0f, 0.0);
-
-    //displaying the charaters of the string text1 with the respective font and font size
-    for (int i = 0; i < text1.length(); i++) {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, text1[i]);
-    }
-
-
-    //calculate the width of the string text2
-    stringWidth = text2.length();
-
-    //positioning text2 in the center of the screen
-    glRasterPos3f(centerX - stringWidth / 2, centerY / 2, 0.0);
-
-    //displaying the charaters of the string text2 with the respective font and font size
-    for (int i = 0; i < text2.length(); i++) {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text2[i]);
-    }
-
-
-    //calculate the width of the string text3
-    stringWidth = text3.length();
-
-    //positioning text3 in the center of the screen
-    glRasterPos3f(centerX - stringWidth / 2, (centerY / 2) - 3.0f, 0.0);
-
-    //displaying the charaters of the string text3 with the respective font and font size
-    for (int i = 0; i < text3.length(); i++) {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text3[i]);
-    }
+// Menu Lose Draw callback
+GLvoid drawWin() {
+    menu->draw(2);
     glutSwapBuffers();
 }
 
@@ -835,7 +730,8 @@ GLvoid gameStart(GLvoid) {
     gameTime = 1000/45;
 
     //variables for player bullet creation
-    playerBulletSpeed[0], playerBulletSpeed[1] = 1.0f;
+    playerBulletSpeed[0]=1.0f;
+    playerBulletSpeed[1] = 1.0f;
 
     //Control over the enemy's movement direction
     enemyDirection = 0;
@@ -851,7 +747,7 @@ GLvoid gameStart(GLvoid) {
     enemyBulletDirection = 1;
 
     playerCanShoot = false;
-    playerShootTime = 1000;
+    playerShootTime = 500;
 
     //Control players position
     playerPosition[0] = (worldCoordinates[0] + worldCoordinates[1]) / 2;
@@ -891,19 +787,20 @@ GLvoid gameStart(GLvoid) {
 
 //finish function
 GLvoid gameFinish(GLvoid) {
+    //Set display callback
+    if(!isPlayerAlive) {
+        glutDisplayFunc(drawLose);
+    } else{
+        glutDisplayFunc(drawWin);
+    }
+    //Set keyboard callback
+    glutKeyboardFunc(menuKeyboard);
 
     //clear vectors every time the game finish
     playerBullets.clear();
     enemyBullets.clear();
     enemies.clear();
     stars.clear();
-
-    //Set display callback
-    glutDisplayFunc(drawFinish);
-
-    //Set keyboard callback
-    glutKeyboardFunc(menuKeyboard);
-
 }
 
 GLvoid loop(GLvoid) {
@@ -1044,12 +941,13 @@ int main(int argc, char** argv) {
 
     //Define window size
     glutInitWindowSize(800, 800);
+    //glutInitWindowSize(500, 500);
 
     //Create window with name
     glutCreateWindow("Space Shooter");
 
     //Set display callback
-    glutDisplayFunc(drawMenu);
+    glutDisplayFunc(drawMainMenu);
 
     //Set keyboard callback
     glutKeyboardFunc(menuKeyboard);

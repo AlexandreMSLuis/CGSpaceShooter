@@ -52,16 +52,8 @@ Enemy::Enemy(GLfloat x, GLfloat y, GLint eType) {
 
     enemyBuffer = stbi_load(enemyTextureFilePath.c_str(), &width, &height, &bpp, 4);
 
-    size[0] = (float)width * 0.03f;;
-    size[1] = (float)height * 0.03f;;
-
-    /*
-    size[0] = 3.0f;
-    size[1] = 2.0f;
-    */
-
-    cout << "width: " << width << "height: " << height << endl;
-    cout << "size[0]: " << size[0] << "size[1]: " << size[1] << endl;
+    size[0] = (float)width * 0.03f;
+    size[1] = (float)height * 0.03f;
 
     glGenTextures(1, &enemyRenderID);
     glBindTexture(GL_TEXTURE_2D, enemyRenderID);
