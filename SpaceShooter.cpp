@@ -18,6 +18,8 @@ Space Invasion!!
 
 ++++++++++++++++++++++++++++++++++*/
 
+ISoundEngine *SoundEngine = createIrrKlangDevice();
+
 // number for stars of the background quantity
 GLint nStars;
 
@@ -52,6 +54,9 @@ GLfloat playerPosition[2];
 
 //Game timer expired
 GLboolean gameTimerExpired;
+
+//menu timer expired
+GLboolean menuTimerExpired=false;
 
 //player shoot timer
 GLboolean playerCanShoot;
@@ -106,21 +111,27 @@ GLvoid drawAxis() {
     }glEnd();
 }
 
-
-
 /* 
     FUNCTION SIGNATURES
 
 */
 
-GLvoid  gameStart(GLvoid);
+GLvoid gameStart(GLvoid);
 GLvoid gameFinish(GLvoid);
-GLvoid loop(GLvoid);
+GLvoid gameLoop(GLvoid);
+GLvoid menuLoop(GLvoid);
+
 
 //game timer function
 void gameTimer(GLint value) {
     gameTimerExpired = true;
     glutTimerFunc(gameTime, gameTimer, 0);
+}
+
+//game timer function
+void menuTimer(GLint value) {
+    menuTimerExpired = true;
+    glutTimerFunc(1000/30, menuTimer, 0);
 }
 
 //player shoot timer function
@@ -233,6 +244,7 @@ GLvoid gameKeyboard(unsigned char key, int x, int y) {
             firePosition[1] = playerBulletPosition[1] + (playerSize[1] / 2);
             bullet = new Bullet(firePosition, playerBulletSpeed, playerBulletDirection, 2);
             playerBullets.push_back(bullet);
+            SoundEngine->play2D("Audio/sfx_laser1.ogg");
         }
         break;
 
@@ -279,7 +291,7 @@ GLvoid checkPlayerLives(GLvoid) {
         GLfloat color[] = { 0.5,0.5,0.5 };
         createParticles(player->getPosition(), color);
         player->~Ship();
-        cout << "DEAD!!!" << endl;
+        SoundEngine->play2D("Audio/sfx_lose.ogg");
     }
 }
 
@@ -329,6 +341,8 @@ GLvoid checkBulletColidingEnemies(GLvoid) {
                     enemies[i]->~Enemy();
                     //removing enemy from vector
                     enemies.erase(enemies.begin() + i);
+
+                    SoundEngine->play2D("Audio/sfx_twoTone.ogg");
 
                     score += 10;
                     break;
@@ -473,138 +487,8 @@ GLvoid enemyFireBullet(GLvoid) {
             GLfloat enemyBulletSpeed[] = { 1.0f, 1.0f };
             enemyBullet = new Bullet(enemyBulletPosition, enemyBulletSpeed, enemyBulletDirection, 1);
             enemyBullets.push_back(enemyBullet);
+            SoundEngine->play2D("Audio/sfx_laser2.ogg");
         }
-    }
-}
-
-GLvoid idle(GLvoid) {
-    GLboolean playerUpdate = false,
-        screenRefresh = false;
-
-    GLfloat xMin = worldCoordinates[1],
-        xMax = worldCoordinates[0],
-        yMin = worldCoordinates[3],
-        yMax = worldCoordinates[2],
-        * currentEnemyPosition,
-        * currentEnemySize;
-
-
-    //player movement
-    if (playerDirection != -1) {
-        playerUpdate = player->move(playerDirection);
-        if (playerUpdate) {
-            screenRefresh = true;
-            playerDirection = -1;
-        }
-    }
-
-    //enemy movement
-    if (gameTimerExpired) {
-        gameTimerExpired = false;
-        //screenRefresh = true;
-        checkPlayerLives();
-        checkAllEnemiesDestroyed();
-        //call of the function that makes the enemy fire a bullet
-        enemyFireBullet();
-
-
-        for (int i = 0; i < enemies.size(); i++) {
-            currentEnemyPosition = enemies.at(i)->getPosition();
-            currentEnemySize = enemies.at(i)->getSize();
-
-            //check X bounderies, update as necesary
-            if (xMin > currentEnemyPosition[0])
-                xMin = currentEnemyPosition[0] - (currentEnemySize[0] / 2);
-            if (xMax < currentEnemyPosition[0])
-                xMax = currentEnemyPosition[0] + (currentEnemySize[0] / 2);
-
-            //check Y bounderies, update as necesary
-            if (yMin > currentEnemyPosition[1])
-                yMin = currentEnemyPosition[1] - (currentEnemySize[1] / 2);
-            if (yMax < currentEnemyPosition[1])
-                yMax = currentEnemyPosition[1] + (currentEnemySize[1] / 2);
-        }
-
-        //change direction
-        switch (enemyDirection) {
-        case 0: // move right
-            if (xMax + 0.3f > worldCoordinates[1]) {
-                enemyDirection = 2;
-                enemyWallHits++;
-            }
-            break;
-
-        case 1: // move down
-            enemyDirection = 0;
-            enemyWallHits = 0;
-
-            break;
-
-        case 2: //move left
-            if (xMin - 0.3f < worldCoordinates[0]) {
-                enemyDirection = 0;
-                enemyWallHits++;
-            }
-            break;
-
-        case 3: // move up
-            break;
-
-        default:
-            break;
-        }
-
-
-        if (enemyWallHits == 6) {
-            enemyDirection = 1;
-        }
-
-
-        //move enemies
-        for (int i = 0; i < enemies.size(); i++) {
-            enemies.at(i)->move(enemyDirection);
-        }
-
-        //update all bullets position
-        for (int i = 0; i < playerBullets.size(); i++) {
-            playerBullets[i]->move();
-
-        }
-
-        for (int i = 0; i < enemyBullets.size(); i++) {
-            enemyBullets.at(i)->move();
-        }
-
-        // call of the function that check colision of bullets with enemies
-        checkBulletColidingEnemies();
-        // call of the function that check colision of bullets with the player
-        checkBulletColidingPLayer();
-
-        // call of the function that check if enemyBullets are outside boundaries and replace the actual vector
-        enemyBullets = checkBulletOutsideBoundaries(enemyBullets);
-        // call of the function that check if playerBullets are outside boundaries and replace the actual vector
-        playerBullets = checkBulletOutsideBoundaries(playerBullets);
-
-        //update particles
-        for (int i = 0; i < particles.size(); i++)
-        {
-            if (particles.at(i)->getOpacity() > 0) {
-                particles.at(i)->move();
-            }
-            else {
-                particles.erase(particles.begin() + i);
-            }
-        }
-        //cout << "Player bullets: " << playerBullets.size() << endl;
-        //cout << "Enemy bullets: " << enemyBullets.size() << endl;
-
-
-    }// end of gameTimer
-
-    //update screen refresh
-    if (screenRefresh) {
-        glutPostRedisplay();
-        screenRefresh = false;
     }
 }
 
@@ -720,6 +604,7 @@ GLvoid drawWin() {
 
 //start game function
 GLvoid gameStart(GLvoid) {
+    SoundEngine->stopAllSounds();
     //level manage
     levelFinished = false;
     isPlayerAlive = true;
@@ -747,7 +632,7 @@ GLvoid gameStart(GLvoid) {
     enemyBulletDirection = 1;
 
     playerCanShoot = false;
-    playerShootTime = 500;
+    playerShootTime = 100;
 
     //Control players position
     playerPosition[0] = (worldCoordinates[0] + worldCoordinates[1]) / 2;
@@ -781,8 +666,7 @@ GLvoid gameStart(GLvoid) {
     glutKeyboardFunc(gameKeyboard);
 
     //Set Idle callback
-    glutIdleFunc(loop);
-
+    glutIdleFunc(gameLoop);
 }
 
 //finish function
@@ -790,8 +674,12 @@ GLvoid gameFinish(GLvoid) {
     //Set display callback
     if(!isPlayerAlive) {
         glutDisplayFunc(drawLose);
+        glutIdleFunc(menuLoop);
+        SoundEngine->play2D("Audio/lose.wav");
     } else{
         glutDisplayFunc(drawWin);
+        glutIdleFunc(menuLoop);
+        SoundEngine->play2D("Audio/win.wav");
     }
     //Set keyboard callback
     glutKeyboardFunc(menuKeyboard);
@@ -801,9 +689,11 @@ GLvoid gameFinish(GLvoid) {
     enemyBullets.clear();
     enemies.clear();
     stars.clear();
+    particles.clear();
+    lives.clear();
 }
 
-GLvoid loop(GLvoid) {
+GLvoid gameLoop(GLvoid) {
     GLboolean playerUpdate;
 
     GLfloat xMin = worldCoordinates[1],
@@ -919,14 +809,18 @@ GLvoid loop(GLvoid) {
                 particles.erase(particles.begin() + i);
             }
         }
-        //cout << "Player bullets: " << playerBullets.size() << endl;
-        //cout << "Enemy bullets: " << enemyBullets.size() << endl;
-        //cout << "Timer: " << gameTime << endl;
-        //cout << "nStars: " << nStars << endl;
     glutPostRedisplay();
     }// end of gameTimer
 
 }
+
+GLvoid menuLoop(GLvoid){
+    if(menuTimerExpired){
+        menuTimerExpired = false;
+        glutPostRedisplay();
+    }
+}
+
 
 //main loop
 int main(int argc, char** argv) {
@@ -949,11 +843,15 @@ int main(int argc, char** argv) {
     //Set display callback
     glutDisplayFunc(drawMainMenu);
 
+    SoundEngine->play2D("Audio/mainTheme.wav",true);
+
     //Set keyboard callback
     glutKeyboardFunc(menuKeyboard);
 
     //Set game timer function
     gameTimer(1);
+
+    menuTimer(1);
 
     //Set player shoot timer
     playerShootTimer(1);
